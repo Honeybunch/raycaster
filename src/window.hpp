@@ -13,7 +13,7 @@ struct Window_t;
 
 typedef struct Window_t *Window;
 
-#define MAX_WINDOWS 16
+const uint32_t MAX_WINDOWS = 16;
 
 bool init_window_system();
 
