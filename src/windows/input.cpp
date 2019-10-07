@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #include "input.hpp"
 
 #include <assert.h>
@@ -64,3 +65,4 @@ void poll_input() {
 }
 
 } // namespace raycaster
+#endif
