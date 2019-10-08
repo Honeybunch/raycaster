@@ -10,10 +10,10 @@ Map map_1 = {};
 
 Map *load_map_1() {
   // Load textures
-  map_1.textures[0] = load_texture("assets/textures/ice.png");
-  map_1.textures[1] = load_texture("assets/textures/rock.png");
-  map_1.textures[2] = load_texture("assets/textures/sand.png");
-  map_1.textures[3] = load_texture("assets/textures/snow.png");
+  map_1.wall_textures[0] = load_texture("assets/textures/ice.png");
+  map_1.wall_textures[1] = load_texture("assets/textures/rock.png");
+  map_1.wall_textures[2] = load_texture("assets/textures/sand.png");
+  map_1.wall_textures[3] = load_texture("assets/textures/snow.png");
 
   // Setup map
   map_1.cells = new Cell *[MAX_MAP_SIZE];

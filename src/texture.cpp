@@ -62,7 +62,9 @@ uint32_t texture_get_size(texture t) {
 }
 
 void destroy_texture(texture t) {
-  assert(t);
+  if (t == INVALID_TEXTURE_HANDLE) {
+    return;
+  }
 
   stbi_image_free(t->image);
 

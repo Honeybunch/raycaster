@@ -15,6 +15,10 @@ uint32_t width = 0;
 uint32_t height = 0;
 const uint32_t bytes_pp = 4;
 
+// Stores the wall height at each column
+// Used during draw_things to determine if a column needs to be clipped
+uint32_t *occlusion_buffer = nullptr;
+
 uint32_t backbuffer_size = 0;
 uint8_t *backbuffer = nullptr;
 
@@ -278,12 +282,14 @@ void draw_world(const Map *map) {
     uint32_t height = calc_column_height(view_angle, view_pos.x, view_pos.y,
                                          intersect_x, intersect_y);
 
+    occlusion_buffer[i] = height;
+
     // We have reached the end of the world
     // Draw a color
     if (cell == Cell::BLANK) {
       draw_column(i, height, pack_rgb(50, 10, 10));
     } else {
-      texture wall_texture = map->textures[uint32_t(cell) - 1];
+      texture wall_texture = map->wall_textures[uint32_t(cell) - 1];
 
       if (side == 0) {
         draw_column(i, height, intersect_y, wall_texture);
@@ -294,12 +300,16 @@ void draw_world(const Map *map) {
   }
 }
 
-bool init_renderer(uint32_t _width, uint32_t _height) {
-  width = _width;
-  height = _height;
+void draw_things(const Map *map) {}
+
+bool init_renderer(uint32_t w, uint32_t h) {
+  width = w;
+  height = h;
 
   backbuffer_size = width * height * bytes_pp;
   backbuffer = new uint8_t[backbuffer_size];
+
+  occlusion_buffer = new uint32_t[width];
 
   return true;
 }
@@ -310,9 +320,12 @@ void renderer_set_view(float2 pos, float angle) {
 }
 
 void render(const Map *map) {
+  assert(occlusion_buffer);
+
   draw_floor();
   draw_ceiling();
   draw_world(map);
+  draw_things(map);
 }
 
 uint32_t get_buffer_size() { return backbuffer_size; }
@@ -324,6 +337,9 @@ void shutdown_renderer() {
 
   delete[] backbuffer;
   backbuffer = nullptr;
+
+  delete[] occlusion_buffer;
+  occlusion_buffer = nullptr;
 }
 
 } // namespace raycaster
