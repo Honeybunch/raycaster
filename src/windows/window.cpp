@@ -22,7 +22,7 @@ struct Window_t {
   HDC framebuffers[MAX_FRAMEBUFFER_COUNT] = {};
 };
 
-struct Window_t windows[MAX_WINDOWS] = {};
+Window_t windows[MAX_WINDOWS] = {};
 uint32_t window_count = 0;
 
 const wchar_t class_name[] = L"TestWindowClass";

@@ -2,6 +2,9 @@
 #include "renderer.hpp"
 #include "window.hpp"
 
+#include "map.hpp"
+#include "map_1.hpp"
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -9,17 +12,18 @@
 
 namespace raycaster {
 
-Window window = NULL;
+Window window = nullptr;
 
 struct Player {
   float view_angle = 5.133181f;
   float pos_x = 1.5f;
-  float pos_y = 1.5f;
+  float pos_y = 4.5f;
   const float move_speed = 0.01f;
   const float turn_rate = 0.05f;
 };
 
 Player player = {};
+Map *map = nullptr;
 
 void on_turn_left() {
   player.view_angle += player.turn_rate;
@@ -107,7 +111,7 @@ bool start() {
   uint32_t width = 800;
   uint32_t height = 600;
 
-  struct WindowDescriptor window_desc = {width, height};
+  WindowDescriptor window_desc = {width, height};
 
   if (!init_window_system()) {
     return false;
@@ -129,6 +133,9 @@ bool start() {
   register_key_press_callback(Key::Q, on_move_left);
   register_key_press_callback(Key::E, on_move_right);
 
+  // Load map
+  map = load_map_1();
+
   return true;
 }
 
@@ -142,7 +149,8 @@ void update() {
     printf("Pos: %f, %f ; View: %f\n", player.pos_x, player.pos_y,
            player.view_angle);
 
-    render();
+    render(map);
+
     uint32_t buffer_size = get_buffer_size();
     const uint8_t *buffer = get_render_target();
 
@@ -151,6 +159,7 @@ void update() {
 }
 
 void end() {
+  destroy_map(map);
   shutdown_renderer();
   shutdown_window_system();
 }

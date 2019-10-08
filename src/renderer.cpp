@@ -1,5 +1,7 @@
 #include "renderer.hpp"
 
+#include "texture.hpp"
+
 #include <assert.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -19,17 +21,6 @@ const uint32_t bytes_pp = 4;
 
 uint32_t backbuffer_size = 0;
 uint8_t *backbuffer = nullptr;
-
-enum class Cell : uint8_t {
-  BLANK = 0,
-  WALL = 1,
-  END = 2,
-};
-
-const uint32_t MAX_MAP_SIZE = 512; // Max map size 512x512
-const uint32_t MAX_MAP_INDEX = MAX_MAP_SIZE - 1;
-const float MAX_MAP_VALUE = MAX_MAP_SIZE;
-Cell **map = nullptr;
 
 Point view_pos = {0, 0};
 float view_angle = 0.0f;
@@ -95,9 +86,7 @@ uint32_t calc_column_height(float view_angle, float view_x, float view_y,
   return static_cast<uint32_t>(column_height);
 }
 
-void draw_column(uint32_t column_idx, uint32_t column_height) {
-  const uint32_t wall_color = pack_rgb(50, 10, 10);
-
+void draw_column(uint32_t column_idx, uint32_t column_height, uint32_t color) {
   if (column_height > height) {
     column_height = height;
   }
@@ -106,7 +95,6 @@ void draw_column(uint32_t column_idx, uint32_t column_height) {
   const uint32_t half_column_height = column_height / 2;
 
   uint32_t *backbuffer_rgb = reinterpret_cast<uint32_t *>(backbuffer);
-  const uint32_t backbuffer_rgb_max = backbuffer_size / sizeof(uint32_t);
 
   for (uint32_t i = 0; i < half_column_height; ++i) {
     uint32_t offset = (i * width);
@@ -114,12 +102,34 @@ void draw_column(uint32_t column_idx, uint32_t column_height) {
     uint32_t upper_idx = half_height + offset + column_idx;
     uint32_t lower_idx = half_height - offset + column_idx;
 
-    backbuffer_rgb[upper_idx] = wall_color;
-    backbuffer_rgb[lower_idx] = wall_color;
+    backbuffer_rgb[upper_idx] = color;
+    backbuffer_rgb[lower_idx] = color;
   }
 }
 
-void draw_world() {
+void draw_column(uint32_t column_idx, uint32_t column_height, float intersect,
+                 texture tex) {
+  if (column_height > height) {
+    column_height = height;
+  }
+
+  const uint32_t tex_width = texture_get_width(tex);
+  const uint32_t tex_height = texture_get_height(tex);
+  const uint32_t tex_column = uint32_t(intersect / tex_width);
+
+  const uint8_t *tex_img = texture_get_image(tex);
+
+  for (uint32_t i = 0; i < column_height; ++i) {
+    uint32_t backbuffer_idx = (i * width) + column_idx;
+    uint32_t tex_idx = (i * tex_width) + tex_column;
+
+    backbuffer[backbuffer_idx + 0] = tex_img[tex_idx + 0];
+    backbuffer[backbuffer_idx + 1] = tex_img[tex_idx + 1];
+    backbuffer[backbuffer_idx + 2] = tex_img[tex_idx + 2];
+  }
+}
+
+void draw_world(const Map *map) {
   const float fov = M_PI_2; // 90 degree FoV
   const uint32_t ray_count = width;
 
@@ -186,6 +196,7 @@ void draw_world() {
     // Note that while we march the ray, alternating on X and Y axis comparison
     // lengths, we also step a cell counter. This helps keep track of if we hit
     // a wall cell but collided with its positive side.
+    Cell cell = Cell::BLANK;
     while (true) {
       if (x_intersect_len < y_intersect_len) {
         x_intersect_len += x_intersect_step;
@@ -213,7 +224,8 @@ void draw_world() {
         break;
       }
 
-      if (map[cell_x][cell_y] != Cell::BLANK) {
+      cell = map->cells[cell_x][cell_y];
+      if (cell != Cell::BLANK) {
         break;
       }
     }
@@ -243,7 +255,15 @@ void draw_world() {
     uint32_t height = calc_column_height(view_angle, view_pos.x, view_pos.y,
                                          intersect_x, intersect_y);
 
-    draw_column(i, height);
+    // We have reached the end of the world
+    // Draw a color
+    if (cell == Cell::BLANK) {
+      draw_column(i, height, pack_rgb(50, 10, 10));
+    } else {
+      texture wall_texture = map->textures[uint32_t(cell) - 1];
+
+      draw_column(i, height, intersect_x, wall_texture);
+    }
   }
 }
 
@@ -253,18 +273,6 @@ bool init_renderer(uint32_t _width, uint32_t _height) {
 
   backbuffer_size = width * height * bytes_pp;
   backbuffer = new uint8_t[backbuffer_size];
-
-  map = new Cell *[MAX_MAP_SIZE];
-  for (uint32_t i = 0; i < MAX_MAP_SIZE; ++i) {
-    map[i] = new Cell[MAX_MAP_SIZE];
-    memset(map[i], 1, sizeof(Cell) * MAX_MAP_SIZE);
-  }
-
-  // Init dummy map data
-  map[1][1] = Cell::BLANK;
-  map[1][2] = Cell::BLANK;
-  map[2][1] = Cell::BLANK;
-  map[2][2] = Cell::BLANK;
 
   return true;
 }
@@ -276,10 +284,10 @@ void set_view_pos(float x, float y) {
 
 void set_view_angle(float angle) { view_angle = angle; }
 
-void render() {
+void render(const Map *map) {
   draw_floor();
   draw_ceiling();
-  draw_world();
+  draw_world(map);
 }
 
 uint32_t get_buffer_size() { return backbuffer_size; }
@@ -291,12 +299,6 @@ void shutdown_renderer() {
 
   delete[] backbuffer;
   backbuffer = nullptr;
-
-  for (uint32_t i = 0; i < MAX_MAP_SIZE; ++i) {
-    delete[] map[i];
-  }
-  delete[] map;
-  map = nullptr;
 }
 
 } // namespace raycaster
