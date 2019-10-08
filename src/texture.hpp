@@ -10,6 +10,7 @@ const uint8_t *texture_get_image(texture t);
 int32_t texture_get_width(texture t);
 int32_t texture_get_height(texture t);
 int32_t texture_get_channels(texture t);
+uint32_t texture_get_size(texture t);
 
 void destroy_texture(texture t);
 

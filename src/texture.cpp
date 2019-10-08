@@ -56,6 +56,11 @@ int32_t texture_get_channels(texture t) {
   return t->channels;
 }
 
+uint32_t texture_get_size(texture t) {
+  assert(t);
+  return t->width * t->height * t->channels;
+}
+
 void destroy_texture(texture t) {
   assert(t);
 

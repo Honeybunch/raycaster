@@ -29,6 +29,10 @@ uint32_t pack_rgb(uint8_t r, uint8_t g, uint8_t b) {
   return 0xFF000000 + (r << 16) + (g << 8) + b;
 }
 
+uint32_t pack_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+  return (a << 24) + (r << 16) + (g << 8) + b;
+}
+
 void set_pixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b) {
   assert(x < width);
   assert(y < height);
@@ -91,10 +95,10 @@ void draw_column(uint32_t column_idx, uint32_t column_height, uint32_t color) {
     column_height = height;
   }
 
-  const uint32_t half_height = (height / 2) * width;
-  const uint32_t half_column_height = column_height / 2;
+  const uint32_t half_height = (height * 0.5f) * width;
+  const uint32_t half_column_height = column_height * 0.5f;
 
-  uint32_t *backbuffer_rgb = reinterpret_cast<uint32_t *>(backbuffer);
+  uint32_t *backbuffer_rgbx = reinterpret_cast<uint32_t *>(backbuffer);
 
   for (uint32_t i = 0; i < half_column_height; ++i) {
     uint32_t offset = (i * width);
@@ -102,8 +106,8 @@ void draw_column(uint32_t column_idx, uint32_t column_height, uint32_t color) {
     uint32_t upper_idx = half_height + offset + column_idx;
     uint32_t lower_idx = half_height - offset + column_idx;
 
-    backbuffer_rgb[upper_idx] = color;
-    backbuffer_rgb[lower_idx] = color;
+    backbuffer_rgbx[upper_idx] = color;
+    backbuffer_rgbx[lower_idx] = color;
   }
 }
 
@@ -115,18 +119,41 @@ void draw_column(uint32_t column_idx, uint32_t column_height, float intersect,
 
   const uint32_t tex_width = texture_get_width(tex);
   const uint32_t tex_height = texture_get_height(tex);
-  const uint32_t tex_column = uint32_t(intersect / tex_width);
+  const uint32_t tex_size = texture_get_size(tex);
+
+  // Want to select column of texture based on where we intersected the wall
+  // This way we will repeat some columns so the texture fills the entire wall.
+  const uint32_t tex_column = (intersect - uint32_t(intersect)) * tex_width;
 
   const uint8_t *tex_img = texture_get_image(tex);
 
-  for (uint32_t i = 0; i < column_height; ++i) {
-    uint32_t backbuffer_idx = (i * width) + column_idx;
-    uint32_t tex_idx = (i * tex_width) + tex_column;
+  const uint32_t half_height = height * 0.5f;
+  const uint32_t half_column_height = column_height * 0.5f;
+  const uint32_t start_height_idx = (half_height - half_column_height) * width;
 
-    backbuffer[backbuffer_idx + 0] = tex_img[tex_idx + 0];
-    backbuffer[backbuffer_idx + 1] = tex_img[tex_idx + 1];
-    backbuffer[backbuffer_idx + 2] = tex_img[tex_idx + 2];
+  uint32_t *backbuffer_rgbx = reinterpret_cast<uint32_t *>(backbuffer);
+
+  float tex_y_factor = float(tex_height) / float(column_height);
+
+  for (uint32_t i = 0; i < column_height; ++i) {
+    uint32_t backbuffer_idx = start_height_idx + (i * width) + column_idx;
+
+    // Need to scale texture on Y to match column height
+    uint32_t tex_y = uint32_t(i * tex_y_factor) % tex_height;
+
+    // * 4 because the texture is assumed to either have 4
+    // channels or have padding.
+    uint32_t tex_idx = ((tex_y * tex_width) + tex_column) * 4;
+
+    const uint8_t r = tex_img[tex_idx + 0];
+    const uint8_t g = tex_img[tex_idx + 1];
+    const uint8_t b = tex_img[tex_idx + 2];
+    const uint8_t a = tex_img[tex_idx + 3];
+
+    backbuffer_rgbx[backbuffer_idx] = pack_rgba(r, g, b, a);
   }
+
+  int i = 0;
 }
 
 void draw_world(const Map *map) {
@@ -262,7 +289,11 @@ void draw_world(const Map *map) {
     } else {
       texture wall_texture = map->textures[uint32_t(cell) - 1];
 
-      draw_column(i, height, intersect_x, wall_texture);
+      if (side == 0) {
+        draw_column(i, height, intersect_y, wall_texture);
+      } else {
+        draw_column(i, height, intersect_x, wall_texture);
+      }
     }
   }
 }
