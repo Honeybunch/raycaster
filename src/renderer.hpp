@@ -1,15 +1,15 @@
 #pragma once
 
-#include <stdint.h>
-
+#include "float2.hpp"
 #include "map_types.hpp"
+
+#include <stdint.h>
 
 namespace raycaster {
 
 bool init_renderer(uint32_t width, uint32_t height);
 
-void set_view_pos(float x, float y);
-void set_view_angle(float angle);
+void renderer_set_view(float2 view_pos, float angle);
 
 void render(const Map *map);
 

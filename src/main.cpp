@@ -1,3 +1,4 @@
+#include "float2.hpp"
 #include "input.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
@@ -16,10 +17,9 @@ Window window = nullptr;
 
 struct Player {
   float view_angle = 5.133181f;
-  float pos_x = 1.5f;
-  float pos_y = 4.5f;
-  const float move_speed = 0.01f;
-  const float turn_rate = 0.05f;
+  float2 pos = {1.5f, 4.5f};
+  float move_speed = 0.01f;
+  float turn_rate = 0.05f;
 };
 
 Player player = {};
@@ -47,63 +47,55 @@ void on_turn_right() {
 
 void on_move_left() {
   float right_angle = player.view_angle - M_PI_2;
-  float right_x = cosf(right_angle);
-  float right_y = sinf(right_angle);
+  float2 right = {cosf(right_angle), sinf(right_angle)};
 
-  player.pos_x -= right_x * player.move_speed;
-  player.pos_y -= right_y * player.move_speed;
+  player.pos = float2_sub(player.pos, float2_mul(right, player.move_speed));
 
-  if (player.pos_x < 0) {
-    player.pos_x = 0;
+  if (player.pos.x < 0) {
+    player.pos.x = 0;
   }
-  if (player.pos_y < 0) {
-    player.pos_y = 0;
+  if (player.pos.y < 0) {
+    player.pos.y = 0;
   }
 }
 
 void on_move_right() {
   float right_angle = player.view_angle - M_PI_2;
-  float right_x = cosf(right_angle);
-  float right_y = sinf(right_angle);
+  float2 right = {cosf(right_angle), sinf(right_angle)};
 
-  player.pos_x += right_x * player.move_speed;
-  player.pos_y += right_y * player.move_speed;
+  player.pos = float2_add(player.pos, float2_mul(right, player.move_speed));
 
-  if (player.pos_x < 0) {
-    player.pos_x = 0;
+  if (player.pos.x < 0) {
+    player.pos.x = 0;
   }
-  if (player.pos_y < 0) {
-    player.pos_y = 0;
+  if (player.pos.y < 0) {
+    player.pos.y = 0;
   }
 }
 
 void on_move_forward() {
-  float forward_x = cosf(player.view_angle);
-  float forward_y = sinf(player.view_angle);
+  float2 forward = {cosf(player.view_angle), sinf(player.view_angle)};
 
-  player.pos_x += forward_x * player.move_speed;
-  player.pos_y += forward_y * player.move_speed;
+  player.pos = float2_add(player.pos, float2_mul(forward, player.move_speed));
 
-  if (player.pos_x < 0) {
-    player.pos_x = 0;
+  if (player.pos.x < 0) {
+    player.pos.x = 0;
   }
-  if (player.pos_y < 0) {
-    player.pos_y = 0;
+  if (player.pos.y < 0) {
+    player.pos.y = 0;
   }
 }
 
 void on_move_backward() {
-  float forward_x = cosf(player.view_angle);
-  float forward_y = sinf(player.view_angle);
+  float2 forward = {cosf(player.view_angle), sinf(player.view_angle)};
 
-  player.pos_x -= forward_x * player.move_speed;
-  player.pos_y -= forward_y * player.move_speed;
+  player.pos = float2_sub(player.pos, float2_mul(forward, player.move_speed));
 
-  if (player.pos_x < 0) {
-    player.pos_x = 0;
+  if (player.pos.x < 0) {
+    player.pos.x = 0;
   }
-  if (player.pos_y < 0) {
-    player.pos_y = 0;
+  if (player.pos.y < 0) {
+    player.pos.y = 0;
   }
 }
 
@@ -143,11 +135,7 @@ void update() {
   while (!window_should_close(window)) {
     poll_input();
 
-    set_view_pos(player.pos_x, player.pos_y);
-    set_view_angle(player.view_angle);
-
-    printf("Pos: %f, %f ; View: %f\n", player.pos_x, player.pos_y,
-           player.view_angle);
+    renderer_set_view(player.pos, player.view_angle);
 
     render(map);
 

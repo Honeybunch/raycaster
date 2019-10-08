@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 
+#include "float2.hpp"
 #include "texture.hpp"
 
 #include <assert.h>
@@ -10,11 +11,6 @@
 
 namespace raycaster {
 
-struct Point {
-  float x = 0.0f;
-  float y = 0.0f;
-};
-
 uint32_t width = 0;
 uint32_t height = 0;
 const uint32_t bytes_pp = 4;
@@ -22,7 +18,7 @@ const uint32_t bytes_pp = 4;
 uint32_t backbuffer_size = 0;
 uint8_t *backbuffer = nullptr;
 
-Point view_pos = {0, 0};
+float2 view_pos = {0, 0};
 float view_angle = 0.0f;
 
 uint32_t pack_rgb(uint8_t r, uint8_t g, uint8_t b) {
@@ -308,12 +304,10 @@ bool init_renderer(uint32_t _width, uint32_t _height) {
   return true;
 }
 
-void set_view_pos(float x, float y) {
-  view_pos.x = x;
-  view_pos.y = y;
+void renderer_set_view(float2 pos, float angle) {
+  view_pos = pos;
+  view_angle = angle;
 }
-
-void set_view_angle(float angle) { view_angle = angle; }
 
 void render(const Map *map) {
   draw_floor();
