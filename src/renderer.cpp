@@ -47,7 +47,7 @@ void draw_floor() {
   uint32_t floor_rgb = pack_rgb(50, 50, 50);
   uint32_t *backbuffer_rgba = reinterpret_cast<uint32_t *>(backbuffer);
 
-  const uint32_t half_size = width * height / 2;
+  const uint32_t half_size = (width * height) / 2;
   for (uint32_t i = 0; i < half_size; ++i) {
     backbuffer_rgba[i] = floor_rgb;
   }
