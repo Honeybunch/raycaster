@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: pwd
+      run: pwd
     - name: cmake configure llvm debug
       run: cmake -GNinja -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -S . -B build_ninja_llvm_ubuntu_debug
     - name: cmake configure llvm release
