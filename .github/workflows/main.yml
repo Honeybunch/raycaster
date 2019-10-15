@@ -1,0 +1,49 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build-linux:
+    name: Build Ubuntu
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: cmake configure llvm debug
+      run: cmake -GNinja -S . -B build_ninja_llvm_ubuntu_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+    - name: cmake configure llvm release
+      run: cmake -GNinja -S . -B build_ninja_llvm_ubuntu_release -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+    - name: cmake configure gcc debug
+      run: cmake -GNinja -S . -B build_ninja_gcc_ubuntu_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=g -DCMAKE_CXX_COMPILER=g++
+    - name: cmake configure gcc release
+      run: cmake -GNinja -S . -B build_ninja_gcc_ubuntu_release -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+    - name: cmake build llvm debug
+      run: cmake --build build_ninja_llvm_ubuntu_debug
+    - name: cmake build llvm release
+      run: cmake --build build_ninja_llvm_ubuntu_release
+    - name: cmake build gcc debug
+      run: cmake --build build_ninja_gcc_ubuntu_debug
+    - name: cmake build gcc release
+      run: cmake --build build_ninja_gcc_ubuntu_release
+      
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: cmake configure llvm debug
+      run: cmake -GNinja -S . -B build_ninja_llvm_windows_debug -DCMAKE_BUILD_TYPE=DEBUG
+    - name: cmake configure llvm release
+      run: cmake -GNinja -S . -B build_ninja_llvm_windows_release -DCMAKE_BUILD_TYPE=RELEASE
+    - name: cmake configure msvc
+      run: cmake -S . -B build_vs2019_msvc_windows
+    - name: cmake build llvm debug
+      run: cmake --build build_ninja_llvm_windows_debug
+    - name: cmake build llvm release
+      run: cmake --build build_ninja_llvm_windows_release
+    - name: cmake build msvc debug
+      run: cmake --build build_vs2019_msvc_windows --configuration Debug
+    - name: cmake build msvc release
+      run: cmake --build build_vs2019_msvc_windows --configuration Release
+
