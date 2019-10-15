@@ -11,6 +11,8 @@ jobs:
     - uses: actions/checkout@v1
     - name: make build dirs
       run: mkdir build_ninja_llvm_ubuntu_debug && mkdir build_ninja_llvm_ubuntu_release && mkdir build_ninja_gcc_ubuntu_debug && mkdir build_ninja_gcc_ubuntu_release
+    - name: install deps
+      run: apt install libxcb-image0-dev
     - name: cmake configure llvm debug
       run: cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ../
       working-directory: build_ninja_llvm_ubuntu_debug
