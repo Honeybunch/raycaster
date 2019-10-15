@@ -10,13 +10,13 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: cmake configure llvm debug
-      run: cmake -GNinja -S. -Bbuild_ninja_llvm_ubuntu_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+      run: cmake -GNinja -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -S. -Bbuild_ninja_llvm_ubuntu_debug
     - name: cmake configure llvm release
-      run: cmake -GNinja -S. -Bbuild_ninja_llvm_ubuntu_release -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+      run: cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -S. -Bbuild_ninja_llvm_ubuntu_release
     - name: cmake configure gcc debug
-      run: cmake -GNinja -S. -Bbuild_ninja_gcc_ubuntu_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=g -DCMAKE_CXX_COMPILER=g++
+      run: cmake -GNinja -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=g -DCMAKE_CXX_COMPILER=g++ -S. -Bbuild_ninja_gcc_ubuntu_debug
     - name: cmake configure gcc release
-      run: cmake -GNinja -S. -Bbuild_ninja_gcc_ubuntu_release -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+      run: cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -S. -Bbuild_ninja_gcc_ubuntu_release
     - name: cmake build llvm debug
       run: cmake --build build_ninja_llvm_ubuntu_debug
     - name: cmake build llvm release
