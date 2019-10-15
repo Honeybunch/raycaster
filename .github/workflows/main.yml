@@ -9,10 +9,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: make dirs
-      run: mkdir build_ninja_llvm_ubuntu_debug
+    - name: version
+      run: cmake --version
     - name: cmake configure llvm debug
-      run: cmake -GNinja -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -S . -B build_ninja_llvm_ubuntu_debug
+      run: cmake -GNinja -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
     - name: cmake configure llvm release
       run: cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build_ninja_llvm_ubuntu_release
     - name: cmake configure gcc debug
