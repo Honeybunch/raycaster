@@ -39,5 +39,5 @@ set_target_properties(raycaster PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAK
 if(${TARGET_LINUX})
     find_package(X11 REQUIRED)
 
-    target_link_libraries(raycaster PRIVATE xcb)
+    target_link_libraries(raycaster PRIVATE xcb xcb-image)
 endif()

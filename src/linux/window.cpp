@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include <xcb/xcb.h>
+#include <xcb/xcb_image.h>
 
 namespace raycaster {
 
@@ -80,6 +81,15 @@ bool create_window(const struct WindowDescriptor *desc, Window *window) {
   (*window)->width = desc->width;
   (*window)->height = desc->height;
 
+  // Create pixmaps
+  for (uint32_t i = 0; i < MAX_FRAMEBUFFER_COUNT; ++i) {
+    xcb_pixmap_t pixmap = xcb_generate_id(connection);
+    xcb_create_pixmap(connection, 24, pixmap, handle, desc->width,
+                      desc->height);
+
+    (*window)->framebuffers[i] = pixmap;
+  }
+
   // TODO: Setup cookie for shutdown event
 
   xcb_map_window(connection, handle);
@@ -95,16 +105,57 @@ bool window_should_close(Window window) {
 
   xcb_generic_event_t *event = nullptr;
   do {
-    event = xcb_wait_for_event(connection);
+    event = xcb_poll_for_event(connection);
+    if (event != nullptr) {
+
+      switch (event->response_type & ~0x80) {
+        // Actually present latest framebuffer to window
+      case XCB_EXPOSE: {
+        xcb_copy_area(connection, window->framebuffers[window->current_frame],
+                      window->handle, window->graphics_context, 0, 0, 0, 0,
+                      window->width, window->height);
+
+        window->current_frame++;
+
+        xcb_flush(connection);
+        break;
+      }
+      }
+    }
 
   } while (event != nullptr);
   return false;
 }
 
 void present_window(Window window, const uint8_t *framebuffer,
-                    uint32_t framebuffer_size) {}
+                    uint32_t framebuffer_size) {
+
+  uint32_t next_frame_idx = (window->current_frame + 1) % MAX_FRAMEBUFFER_COUNT;
+
+  xcb_pixmap_t next_pixmap = window->framebuffers[next_frame_idx];
+
+  // Can we avoid this?
+  xcb_image_t *image = xcb_image_create_native(
+      connection, window->width, window->height, XCB_IMAGE_FORMAT_Z_PIXMAP, 24,
+      (void *)framebuffer, framebuffer_size, (uint8_t *)framebuffer);
+
+  xcb_image_put(connection, next_pixmap, window->graphics_context, image, 0, 0,
+                0);
+
+  // xcb_image_destroy(image);
+}
 
 void shutdown_window_system() {
+  for (uint32_t i = 0; i < window_count; ++i) {
+    Window_t &window = windows[i];
+
+    for (uint32_t i = 0; i < MAX_FRAMEBUFFER_COUNT; ++i) {
+      xcb_free_pixmap(connection, window.framebuffers[i]);
+    }
+
+    xcb_free_gc(connection, window.graphics_context);
+  }
+
   screen = nullptr;
   xcb_disconnect(connection);
   connection = nullptr;
