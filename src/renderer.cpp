@@ -26,11 +26,11 @@ float2 view_pos = {0, 0};
 float view_angle = 0.0f;
 
 uint32_t pack_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  return (0xFF000000 + uint32_t(r << 16) + uint32_t(g << 8) + b);
+  return (0xFF000000 | uint32_t(r << 16) | uint32_t(g << 8) | b);
 }
 
 uint32_t pack_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-  return uint32_t(a << 24) + uint32_t(r << 16) + uint32_t(g << 8) + b;
+  return (uint32_t(a << 24) | uint32_t(r << 16) | uint32_t(g << 8) | b);
 }
 
 void set_pixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b) {
@@ -63,7 +63,7 @@ void draw_ceiling() {
   }
 }
 
-uint32_t calc_column_height(float view_angle, float view_x, float view_y,
+uint32_t calc_column_height(float _view_angle, float view_x, float view_y,
                             float x_intercept, float y_intercept) {
   // To avoid a fisheye effect we avoid a formula like:
   // height = sqrt(sq(x2 - x1) + sq(y2 - y1))
@@ -73,13 +73,13 @@ uint32_t calc_column_height(float view_angle, float view_x, float view_y,
   float dx = x_intercept - view_x;
   float dy = y_intercept - view_y;
 
-  float proj_dx = dx * cosf(view_angle);
-  float proj_dy = dy * sinf(view_angle);
+  float proj_dx = dx * cosf(_view_angle);
+  float proj_dy = dy * sinf(_view_angle);
 
   float dist = fabsf(proj_dx + proj_dy);
 
   static const float min_dist = 0.1f;
-  static const float scale_factor = height;
+  static const float scale_factor = (float)height;
 
   if (dist < min_dist) {
     dist = min_dist;
@@ -141,16 +141,11 @@ void draw_column(uint32_t column_idx, uint32_t column_height, float intersect,
     // Need to scale texture on Y to match column height
     uint32_t tex_y = uint32_t(i * tex_y_factor) % tex_height;
 
-    // * 4 because the texture is assumed to either have 4
-    // channels or have padding.
-    uint32_t tex_idx = ((tex_y * tex_width) + tex_column) * 4;
+    uint32_t tex_idx = ((tex_y * tex_width) + tex_column);
 
-    const uint8_t r = tex_img[tex_idx + 0];
-    const uint8_t g = tex_img[tex_idx + 1];
-    const uint8_t b = tex_img[tex_idx + 2];
-    const uint8_t a = tex_img[tex_idx + 3];
+    const uint32_t color = reinterpret_cast<const uint32_t *>(tex_img)[tex_idx];
 
-    backbuffer_rgbx[backbuffer_idx] = pack_rgba(r, g, b, a);
+    backbuffer_rgbx[backbuffer_idx] = color;
   }
 }
 
@@ -188,15 +183,15 @@ void draw_world(const Map *map) {
     float y_intersect_len = 0.0f;
 
     // How much do we step when just counting cells?
-    int32_t cell_step_x = 1.0f;
-    int32_t cell_step_y = 1.0f;
+    int32_t cell_step_x = 1;
+    int32_t cell_step_y = 1;
 
     // Are we facing positive or negative along the X axis?
     if (ray_angle_cos > 0) {
       x_intersect_len = ((uint32_t(view_pos.x) + 1) - view_pos.x);
     } else {
       x_intersect_len = (uint32_t(view_pos.x) - view_pos.x);
-      cell_step_x = -1.0f;
+      cell_step_x = -1;
     }
     x_intersect_len = fabsf(x_intersect_len / ray_angle_cos);
 
@@ -205,7 +200,7 @@ void draw_world(const Map *map) {
       y_intersect_len = ((uint32_t(view_pos.y) + 1) - view_pos.y);
     } else {
       y_intersect_len = (uint32_t(view_pos.y) - view_pos.y);
-      cell_step_y = -1.0f;
+      cell_step_y = -1;
     }
     y_intersect_len = fabsf(y_intersect_len / ray_angle_sin);
 
@@ -274,28 +269,28 @@ void draw_world(const Map *map) {
     intersect_x += view_pos.x;
     intersect_y += view_pos.y;
 
-    uint32_t height = calc_column_height(view_angle, view_pos.x, view_pos.y,
-                                         intersect_x, intersect_y);
+    uint32_t column_height = calc_column_height(
+        view_angle, view_pos.x, view_pos.y, intersect_x, intersect_y);
 
-    occlusion_buffer[i] = height;
+    occlusion_buffer[i] = column_height;
 
     // We have reached the end of the world
     // Draw a color
     if (cell == Cell::BLANK) {
-      draw_column(i, height, pack_rgb(50, 10, 10));
+      draw_column(i, column_height, pack_rgb(50, 10, 10));
     } else {
       texture wall_texture = map->wall_textures[uint32_t(cell) - 1];
 
       if (side == 0) {
-        draw_column(i, height, intersect_y, wall_texture);
+        draw_column(i, column_height, intersect_y, wall_texture);
       } else {
-        draw_column(i, height, intersect_x, wall_texture);
+        draw_column(i, column_height, intersect_x, wall_texture);
       }
     }
   }
 }
 
-void draw_things(const Map *map) {}
+void draw_things(const Map *map) { (void)map; }
 
 bool init_renderer(uint32_t w, uint32_t h) {
   width = w;

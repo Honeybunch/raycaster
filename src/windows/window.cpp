@@ -131,8 +131,9 @@ bool create_window(const WindowDescriptor *desc, Window *window) {
 
 bool window_should_close(Window window) {
   MSG msg = {};
-  bool okay = GetMessage(&msg, NULL, 0, 0);
 
+  bool okay = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+  (void)okay;
   assert(okay);
 
   TranslateMessage(&msg);
@@ -144,6 +145,7 @@ bool window_should_close(Window window) {
 void present_window(Window window, const uint8_t *framebuffer,
                     uint32_t framebuffer_size) {
   // * 4 because we assume 4 bytes per pixel
+  (void)framebuffer_size;
   assert(window->width * window->height * 4 >= framebuffer_size);
 
   const uint32_t next_frame =
@@ -161,6 +163,7 @@ void present_window(Window window, const uint8_t *framebuffer,
   int res =
       SetDIBitsToDevice(current_dc, 0, 0, window->width, window->height, 0, 0,
                         0, window->height, framebuffer, &bmi, DIB_RGB_COLORS);
+  (void)res;
   assert(res != GDI_ERROR);
 
   // Must invalidate window otherwise the updates won't be

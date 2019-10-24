@@ -47,9 +47,10 @@ void register_key_press_callback(Key key, KeyPressCallback callback) {
 
 void poll_input() {
   static const uint32_t max_win32_vk = 256;
-  BYTE key_state[max_win32_vk] = {};
+  BYTE vk_state[max_win32_vk] = {};
 
-  BOOL err = GetKeyboardState(key_state);
+  BOOL err = GetKeyboardState(vk_state);
+  (void)err;
   assert(err != 0);
 
   for (uint32_t i = 0; i < key_count; ++i) {
@@ -58,7 +59,7 @@ void poll_input() {
 
     // Check only the high order bit
     // Low order bit is used for toggle keys
-    if ((key_state[win32_key] >> 7)) {
+    if ((vk_state[win32_key] >> 7)) {
       key_pressed(key);
     }
   }

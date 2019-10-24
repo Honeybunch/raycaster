@@ -20,10 +20,10 @@ const float pi_2_f = float(M_PI_2);
 Window window = nullptr;
 
 struct Player {
-  float view_angle = 5.133181f;
-  float2 pos = {1.5f, 4.5f};
+  float view_angle = 4.7f;
+  float2 pos = {3.0f, 5.5f};
   float move_speed = 0.01f;
-  float turn_rate = 0.05f;
+  float turn_rate = 0.005f;
 };
 
 Player player = {};
@@ -32,8 +32,8 @@ Map *map = nullptr;
 bool pos_intersects_wall(float2 pos, Map *cur_map) {
   assert(cur_map);
 
-  uint32_t x = pos.x;
-  uint32_t y = pos.y;
+  uint32_t x = (uint32_t)pos.x;
+  uint32_t y = (uint32_t)pos.y;
 
   return cur_map->cells[x][y] != Cell::BLANK;
 }

@@ -33,6 +33,15 @@ texture load_texture(const char *filepath) {
 
   assert(t->image);
 
+  // HACK: Win32 surfaces display BGRX images so we're going to flip the
+  // channels of every texture we load
+  for (uint32_t i = 0; i < uint32_t(t->width * t->height * 4); i += 4) {
+    uint8_t r = t->image[i + 0];
+
+    t->image[i + 0] = t->image[i + 2]; // r = b
+    t->image[i + 2] = r;               // b = r
+  }
+
   return t;
 }
 
