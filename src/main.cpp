@@ -13,6 +13,9 @@
 
 namespace raycaster {
 
+const float pi_f = float(M_PI);
+const float pi_2_f = float(M_PI_2);
+
 Window window = nullptr;
 
 struct Player {
@@ -28,48 +31,48 @@ Map *map = nullptr;
 void on_turn_left() {
   player.view_angle += player.turn_rate;
 
-  if (player.view_angle > M_PI * 2) {
-    player.view_angle = 0;
-  } else if (player.view_angle < 0) {
-    player.view_angle = M_PI * 2 - player.view_angle;
+  if (player.view_angle > pi_f * 2.0f) {
+    player.view_angle = 0.0f;
+  } else if (player.view_angle < 0.0f) {
+    player.view_angle = pi_f * 2.0f - player.view_angle;
   }
 }
 
 void on_turn_right() {
   player.view_angle -= player.turn_rate;
 
-  if (player.view_angle > M_PI * 2) {
-    player.view_angle = 0;
-  } else if (player.view_angle < 0) {
-    player.view_angle = M_PI * 2 - player.view_angle;
+  if (player.view_angle > pi_f * 2.0f) {
+    player.view_angle = 0.0f;
+  } else if (player.view_angle < 0.0f) {
+    player.view_angle = pi_f * 2.0f - player.view_angle;
   }
 }
 
 void on_move_left() {
-  float right_angle = player.view_angle - M_PI_2;
+  float right_angle = player.view_angle - pi_2_f;
   float2 right = {cosf(right_angle), sinf(right_angle)};
 
   player.pos = float2_sub(player.pos, float2_mul(right, player.move_speed));
 
-  if (player.pos.x < 0) {
-    player.pos.x = 0;
+  if (player.pos.x < 0.0f) {
+    player.pos.x = 0.0f;
   }
-  if (player.pos.y < 0) {
-    player.pos.y = 0;
+  if (player.pos.y < 0.0f) {
+    player.pos.y = 0.0f;
   }
 }
 
 void on_move_right() {
-  float right_angle = player.view_angle - M_PI_2;
+  float right_angle = player.view_angle - pi_2_f;
   float2 right = {cosf(right_angle), sinf(right_angle)};
 
   player.pos = float2_add(player.pos, float2_mul(right, player.move_speed));
 
-  if (player.pos.x < 0) {
-    player.pos.x = 0;
+  if (player.pos.x < 0.0f) {
+    player.pos.x = 0.0f;
   }
-  if (player.pos.y < 0) {
-    player.pos.y = 0;
+  if (player.pos.y < 0.0f) {
+    player.pos.y = 0.0f;
   }
 }
 
@@ -78,11 +81,11 @@ void on_move_forward() {
 
   player.pos = float2_add(player.pos, float2_mul(forward, player.move_speed));
 
-  if (player.pos.x < 0) {
-    player.pos.x = 0;
+  if (player.pos.x < 0.0f) {
+    player.pos.x = 0.0f;
   }
-  if (player.pos.y < 0) {
-    player.pos.y = 0;
+  if (player.pos.y < 0.0f) {
+    player.pos.y = 0.0f;
   }
 }
 
@@ -91,11 +94,11 @@ void on_move_backward() {
 
   player.pos = float2_sub(player.pos, float2_mul(forward, player.move_speed));
 
-  if (player.pos.x < 0) {
-    player.pos.x = 0;
+  if (player.pos.x < 0.0f) {
+    player.pos.x = 0.0f;
   }
-  if (player.pos.y < 0) {
-    player.pos.y = 0;
+  if (player.pos.y < 0.0f) {
+    player.pos.y = 0.0f;
   }
 }
 

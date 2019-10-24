@@ -35,6 +35,13 @@ target_include_directories(raycaster PRIVATE "src")
 
 set_target_properties(raycaster PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
 
+# Warnings as errors
+if(MSVC)
+    target_compile_options(raycaster PRIVATE /W4 /WX)
+else()
+    target_compile_options(raycaster PRIVATE -Wall -Werror)
+endif()
+
 # Apply platform specific libraries
 if(${TARGET_LINUX})
     find_package(X11 REQUIRED)

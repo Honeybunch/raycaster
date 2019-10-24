@@ -26,11 +26,11 @@ float2 view_pos = {0, 0};
 float view_angle = 0.0f;
 
 uint32_t pack_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  return 0xFF000000 + (r << 16) + (g << 8) + b;
+  return (0xFF000000 + uint32_t(r << 16) + uint32_t(g << 8) + b);
 }
 
 uint32_t pack_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-  return (a << 24) + (r << 16) + (g << 8) + b;
+  return uint32_t(a << 24) + uint32_t(r << 16) + uint32_t(g << 8) + b;
 }
 
 void set_pixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b) {
@@ -95,8 +95,8 @@ void draw_column(uint32_t column_idx, uint32_t column_height, uint32_t color) {
     column_height = height;
   }
 
-  const uint32_t half_height = (height * 0.5f) * width;
-  const uint32_t half_column_height = column_height * 0.5f;
+  const uint32_t half_height = uint32_t((height * 0.5f) * width);
+  const uint32_t half_column_height = uint32_t(column_height * 0.5f);
 
   uint32_t *backbuffer_rgbx = reinterpret_cast<uint32_t *>(backbuffer);
 
@@ -119,16 +119,16 @@ void draw_column(uint32_t column_idx, uint32_t column_height, float intersect,
 
   const uint32_t tex_width = texture_get_width(tex);
   const uint32_t tex_height = texture_get_height(tex);
-  const uint32_t tex_size = texture_get_size(tex);
 
   // Want to select column of texture based on where we intersected the wall
   // This way we will repeat some columns so the texture fills the entire wall.
-  const uint32_t tex_column = (intersect - uint32_t(intersect)) * tex_width;
+  const uint32_t tex_column =
+      uint32_t((intersect - uint32_t(intersect)) * tex_width);
 
   const uint8_t *tex_img = texture_get_image(tex);
 
-  const uint32_t half_height = height * 0.5f;
-  const uint32_t half_column_height = column_height * 0.5f;
+  const uint32_t half_height = uint32_t(height * 0.5f);
+  const uint32_t half_column_height = uint32_t(column_height * 0.5f);
   const uint32_t start_height_idx = (half_height - half_column_height) * width;
 
   uint32_t *backbuffer_rgbx = reinterpret_cast<uint32_t *>(backbuffer);
@@ -152,19 +152,14 @@ void draw_column(uint32_t column_idx, uint32_t column_height, float intersect,
 
     backbuffer_rgbx[backbuffer_idx] = pack_rgba(r, g, b, a);
   }
-
-  int i = 0;
 }
 
 void draw_world(const Map *map) {
-  const float fov = M_PI_2; // 90 degree FoV
+  const float fov = float(M_PI_2); // 90 degree FoV
   const uint32_t ray_count = width;
 
   const float view_angle_start = view_angle + (fov * 0.5f);
   const float view_angle_itr = fov / static_cast<float>(ray_count);
-
-  const float view_angle_cos = cosf(view_angle);
-  const float view_angle_sin = sinf(view_angle);
 
   // For every column of pixels, shoot out a ray from the player
   for (uint32_t i = 0; i < ray_count; ++i) {
@@ -214,8 +209,8 @@ void draw_world(const Map *map) {
     }
     y_intersect_len = fabsf(y_intersect_len / ray_angle_sin);
 
-    uint32_t cell_x = uint32_t(view_pos.x);
-    uint32_t cell_y = uint32_t(view_pos.y);
+    int32_t cell_x = int32_t(view_pos.x);
+    int32_t cell_y = int32_t(view_pos.y);
 
     uint8_t side = 0; // 0 for X, 1, for Y
 

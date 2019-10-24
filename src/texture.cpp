@@ -41,24 +41,24 @@ const uint8_t *texture_get_image(texture t) {
   return t->image;
 }
 
-int32_t texture_get_width(texture t) {
+uint32_t texture_get_width(texture t) {
   assert(t);
-  return t->width;
+  return uint32_t(t->width);
 }
 
-int32_t texture_get_height(texture t) {
+uint32_t texture_get_height(texture t) {
   assert(t);
-  return t->height;
+  return uint32_t(t->height);
 }
 
-int32_t texture_get_channels(texture t) {
+uint32_t texture_get_channels(texture t) {
   assert(t);
-  return t->channels;
+  return uint32_t(t->channels);
 }
 
 uint32_t texture_get_size(texture t) {
   assert(t);
-  return t->width * t->height * t->channels;
+  return uint32_t(t->width * t->height * t->channels);
 }
 
 void destroy_texture(texture t) {

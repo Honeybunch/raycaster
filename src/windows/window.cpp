@@ -41,7 +41,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
   case WM_PAINT: {
     PAINTSTRUCT paint = {};
     HDC dc = BeginPaint(hwnd, &paint);
-    BitBlt(dc, 0, 0, window->width, window->height,
+    BitBlt(dc, 0, 0, int32_t(window->width), int32_t(window->height),
            window->framebuffers[window->current_frame], 0, 0, SRCCOPY);
     EndPaint(hwnd, &paint);
   } break;
@@ -79,8 +79,8 @@ bool create_window(const WindowDescriptor *desc, Window *window) {
   // if we want a "client-area" of the given size
   RECT rect = {0, 0, (LONG)width, (LONG)height};
   AdjustWindowRectEx(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE, 0);
-  uint32_t adjustedWidth = rect.right - rect.left;
-  uint32_t adjustedHeight = rect.bottom - rect.top;
+  int32_t adjustedWidth = rect.right - rect.left;
+  int32_t adjustedHeight = rect.bottom - rect.top;
 
   HWND handle =
       CreateWindowExW(0, class_name, window_name, WS_OVERLAPPEDWINDOW,
@@ -99,8 +99,8 @@ bool create_window(const WindowDescriptor *desc, Window *window) {
 
   BITMAPINFO bmi = {};
   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  bmi.bmiHeader.biWidth = width;
-  bmi.bmiHeader.biHeight = height;
+  bmi.bmiHeader.biWidth = (LONG)width;
+  bmi.bmiHeader.biHeight = (LONG)height;
   bmi.bmiHeader.biPlanes = 1;
   bmi.bmiHeader.biBitCount = 32;
   bmi.bmiHeader.biCompression = BI_RGB;
@@ -152,8 +152,8 @@ void present_window(Window window, const uint8_t *framebuffer,
 
   BITMAPINFO bmi = {};
   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  bmi.bmiHeader.biWidth = window->width;
-  bmi.bmiHeader.biHeight = window->height;
+  bmi.bmiHeader.biWidth = (LONG)window->width;
+  bmi.bmiHeader.biHeight = (LONG)window->height;
   bmi.bmiHeader.biPlanes = 1;
   bmi.bmiHeader.biBitCount = 32;
   bmi.bmiHeader.biCompression = BI_RGB;
