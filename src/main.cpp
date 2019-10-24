@@ -9,6 +9,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <assert.h>
 #include <stdio.h>
 
 namespace raycaster {
@@ -27,6 +28,15 @@ struct Player {
 
 Player player = {};
 Map *map = nullptr;
+
+bool pos_intersects_wall(float2 pos, Map *cur_map) {
+  assert(cur_map);
+
+  uint32_t x = pos.x;
+  uint32_t y = pos.y;
+
+  return cur_map->cells[x][y] != Cell::BLANK;
+}
 
 void on_turn_left() {
   player.view_angle += player.turn_rate;
@@ -52,7 +62,14 @@ void on_move_left() {
   float right_angle = player.view_angle - pi_2_f;
   float2 right = {cosf(right_angle), sinf(right_angle)};
 
-  player.pos = float2_sub(player.pos, float2_mul(right, player.move_speed));
+  float2 next_pos =
+      float2_sub(player.pos, float2_mul(right, player.move_speed));
+
+  if (pos_intersects_wall(next_pos, map)) {
+    // Place the player next to the wall but not through it
+  } else {
+    player.pos = next_pos;
+  }
 
   if (player.pos.x < 0.0f) {
     player.pos.x = 0.0f;
@@ -66,7 +83,14 @@ void on_move_right() {
   float right_angle = player.view_angle - pi_2_f;
   float2 right = {cosf(right_angle), sinf(right_angle)};
 
-  player.pos = float2_add(player.pos, float2_mul(right, player.move_speed));
+  float2 next_pos =
+      float2_add(player.pos, float2_mul(right, player.move_speed));
+
+  if (pos_intersects_wall(next_pos, map)) {
+    // Place the player next to the wall but not through it
+  } else {
+    player.pos = next_pos;
+  }
 
   if (player.pos.x < 0.0f) {
     player.pos.x = 0.0f;
@@ -79,7 +103,14 @@ void on_move_right() {
 void on_move_forward() {
   float2 forward = {cosf(player.view_angle), sinf(player.view_angle)};
 
-  player.pos = float2_add(player.pos, float2_mul(forward, player.move_speed));
+  float2 next_pos =
+      float2_add(player.pos, float2_mul(forward, player.move_speed));
+
+  if (pos_intersects_wall(next_pos, map)) {
+    // Place the player next to the wall but not through it
+  } else {
+    player.pos = next_pos;
+  }
 
   if (player.pos.x < 0.0f) {
     player.pos.x = 0.0f;
@@ -92,7 +123,14 @@ void on_move_forward() {
 void on_move_backward() {
   float2 forward = {cosf(player.view_angle), sinf(player.view_angle)};
 
-  player.pos = float2_sub(player.pos, float2_mul(forward, player.move_speed));
+  float2 next_pos =
+      float2_sub(player.pos, float2_mul(forward, player.move_speed));
+
+  if (pos_intersects_wall(next_pos, map)) {
+    // Place the player next to the wall but not through it
+  } else {
+    player.pos = next_pos;
+  }
 
   if (player.pos.x < 0.0f) {
     player.pos.x = 0.0f;
