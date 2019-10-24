@@ -79,7 +79,7 @@ uint32_t calc_column_height(float view_angle, float view_x, float view_y,
   float dist = fabsf(proj_dx + proj_dy);
 
   static const float min_dist = 0.1f;
-  static const float scale_factor = height * 0.1f;
+  static const float scale_factor = height;
 
   if (dist < min_dist) {
     dist = min_dist;
