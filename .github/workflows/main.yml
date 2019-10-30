@@ -34,16 +34,56 @@ jobs:
   #  - name: cmake build gcc release
   #    run: cmake --build build_ninja_gcc_ubuntu_release
       
-  build-windows:
-    name: Build Windows
+  build-windows-ninja:
+    name: Build Windows Ninja MSVC
     runs-on: windows-latest
     
     steps:
+    # Checkout code
     - uses: actions/checkout@v1
-    - name: cmake configure msvc
-      run: cmake -S. -Bbuild_vs2019_msvc_windows
-    - name: cmake build msvc debug
-      run: cmake --build build_vs2019_msvc_windows --config Debug
-    - name: cmake build msvc release
-      run: cmake --build build_vs2019_msvc_windows --config Release
+    # Install Ninja
+    - uses: seanmiddleditch/gha-setup-ninja@v1
+    # Setup VS dev env
+    - uses: seanmiddleditch/gha-setup-vsdevenv@master
+    
+    # Config Ninja Debug
+    - name: cmake configure ninja msvc debug
+      run: cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG
+    # Config Ninja Profile
+    - name: cmake configure ninja msvc profile
+      run: cmake -GNinja -S. -Bbuild_ninja_msvc_profile -DCMAKE_BUILD_TYPE=RELWITHDEBINFO
+    # Config Ninja Release
+    - name: cmake configure ninja msvc release
+      run: cmake -GNinja -S. -Bbuild_ninja_msvc_release -DCMAKE_BUILD_TYPE=RELEASE
+      
+    # Build Debug
+    - name: cmake build ninja msvc debug
+      run: cmake --build build_ninja_msvc_debug
+    # Build Profile
+    - name: cmake build ninja msvc profile
+      run: cmake --build build_ninja_msvc_profile
+    # Build Release
+    - name: cmake build ninja msvc release
+      run: cmake --build build_ninja_msvc_release
+    
+  build-windows-vs2019:
+    name: Build Windows VS2019 MSVC
+    runs-on: windows-latest
+  
+    steps:
+    - uses: actions/checkout@v1
+      
+    # Config VS2019
+    - name: cmake configure vs2019 msvc
+      run: cmake -S. -Bbuild_vs2019_msvc
+      
+    # Build Debug
+    - name: cmake build vs2019 msvc debug
+      run: cmake --build build_vs2019_msvc --config Debug
+    # Build Profile
+    - name: cmake build vs2019 msvc profile
+      run: cmake --build build_vs2019_msvc --config RelWithDebInfo
+    # Build Release
+    - name: cmake build vs2019 msvc release
+      run: cmake --build build_vs2019_msvc --config Release
 
