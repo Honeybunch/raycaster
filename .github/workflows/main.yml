@@ -66,8 +66,8 @@ jobs:
     - name: Build Ninja MSVC Profile
       run: cmake --build build_ninja_msvc_profile
     # Build Release
-    - name: Build Ninja MSVC Profile
-      run: cmake --build build_ninja_msvc_profile
+    - name: Build Ninja MSVC Release
+      run: cmake --build build_ninja_msvc_release
     
   build-windows-vs2019:
     name: Build Windows VS2019 MSVC
