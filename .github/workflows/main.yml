@@ -47,7 +47,7 @@ jobs:
     - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
     - run: |
-        cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG
+        cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl
       
     - run: cmake --build build_ninja_msvc_debug
     
