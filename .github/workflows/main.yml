@@ -47,7 +47,7 @@ jobs:
     - uses: seanmiddleditch/gha-setup-vsdevenv@master
     
     - name: Setup VS Dev prompt
-      run: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\Tools\\VsDevCmd.bat"
+      run: "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\Tools\\VsDevCmd.bat\""
     
     # Config Ninja Debug
     - name: cmake configure ninja msvc debug
