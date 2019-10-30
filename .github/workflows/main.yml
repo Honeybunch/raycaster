@@ -46,17 +46,26 @@ jobs:
     # Setup VS dev env
     - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
+      # Configure Debug
     - name: Configure Ninja MSVC Debug
-      run: |
-        cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl
-        
+      run: | # This | is important to inherit the VS dev env
+        cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=cl
+      # Configure Profile
     - name: Configure Ninja MSVC Profile
       run: |
-        cmake -GNinja -S. -Bbuild_ninja_msvc_profile -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl
+        cmake -GNinja -S. -Bbuild_ninja_msvc_profile -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DCMAKE_CXX_COMPILER=cl
+      # Configure Release
+    - name: Configure Ninja MSVC Release
+      run: |
+        cmake -GNinja -S. -Bbuild_ninja_msvc_release -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_COMPILER=cl
       
+    # Build Debug
     - name: Build Ninja MSVC Debug
       run: cmake --build build_ninja_msvc_debug
-    
+    # Build Profile
+    - name: Build Ninja MSVC Profile
+      run: cmake --build build_ninja_msvc_profile
+    # Build Release
     - name: Build Ninja MSVC Profile
       run: cmake --build build_ninja_msvc_profile
     
