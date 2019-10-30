@@ -46,10 +46,19 @@ jobs:
     # Setup VS dev env
     - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
-    - run: |
+    - name: Configure Ninja MSVC Debug
+      run: |
         cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl
+        
+    - name: Configure Ninja MSVC Profile
+      run: |
+        cmake -GNinja -S. -Bbuild_ninja_msvc_profile -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl
       
-    - run: cmake --build build_ninja_msvc_debug
+    - name: Build Ninja MSVC Debug
+      run: cmake --build build_ninja_msvc_debug
+    
+    - name: Build Ninja MSVC Profile
+      run: cmake --build build_ninja_msvc_profile
     
   build-windows-vs2019:
     name: Build Windows VS2019 MSVC
