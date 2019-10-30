@@ -46,15 +46,18 @@ jobs:
     # Setup VS dev env
     - uses: seanmiddleditch/gha-setup-vsdevenv@master
     
+    - name: Setup VS Dev prompt
+      run: \"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat\"
+    
     # Config Ninja Debug
     - name: cmake configure ninja msvc debug
-      run: cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=cl.exe
+      run: cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG
     # Config Ninja Profile
     - name: cmake configure ninja msvc profile
-      run: cmake -GNinja -S. -Bbuild_ninja_msvc_profile -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DCMAKE_CXX_COMPILER=cl.exe
+      run: cmake -GNinja -S. -Bbuild_ninja_msvc_profile -DCMAKE_BUILD_TYPE=RELWITHDEBINFO
     # Config Ninja Release
     - name: cmake configure ninja msvc release
-      run: cmake -GNinja -S. -Bbuild_ninja_msvc_release -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_COMPILER=cl.exe
+      run: cmake -GNinja -S. -Bbuild_ninja_msvc_release -DCMAKE_BUILD_TYPE=RELEASE
       
     # Build Debug
     - name: cmake build ninja msvc debug
