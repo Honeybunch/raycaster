@@ -45,29 +45,11 @@ jobs:
     - uses: seanmiddleditch/gha-setup-ninja@v1
     # Setup VS dev env
     - uses: seanmiddleditch/gha-setup-vsdevenv@master
-    
-    - name: Setup VS Dev prompt
-      run: "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\Tools\\VsDevCmd.bat\""
-    
-    # Config Ninja Debug
-    - name: cmake configure ninja msvc debug
-      run: cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.23.28105/bin/Hostx86/x86/cl.exe
-    # Config Ninja Profile
-    - name: cmake configure ninja msvc profile
-      run: cmake -GNinja -S. -Bbuild_ninja_msvc_profile -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DCMAKE_CXX_COMPILER=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.23.28105/bin/Hostx86/x86/cl.exe
-    # Config Ninja Release
-    - name: cmake configure ninja msvc release
-      run: cmake -GNinja -S. -Bbuild_ninja_msvc_release -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_COMPILER=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.23.28105/bin/Hostx86/x86/cl.exe
+
+    - run: |
+        cmake -GNinja -S. -Bbuild_ninja_msvc_debug -DCMAKE_BUILD_TYPE=DEBUG
       
-    # Build Debug
-    - name: cmake build ninja msvc debug
-      run: cmake --build build_ninja_msvc_debug
-    # Build Profile
-    - name: cmake build ninja msvc profile
-      run: cmake --build build_ninja_msvc_profile
-    # Build Release
-    - name: cmake build ninja msvc release
-      run: cmake --build build_ninja_msvc_release
+    - run: cmake --build build_ninja_msvc_debug
     
   build-windows-vs2019:
     name: Build Windows VS2019 MSVC
