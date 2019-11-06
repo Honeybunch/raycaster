@@ -3,8 +3,13 @@
 #include "window.hpp"
 
 #include <assert.h>
+#include <string.h>
+
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 #include <xcb/xcb.h>
+#include <xcb/shm.h>
 #include <xcb/xcb_image.h>
 
 namespace raycaster {
@@ -17,7 +22,8 @@ struct Window_t {
   uint32_t width = 0;
   uint32_t height = 0;
   uint32_t current_frame = 0;
-  xcb_pixmap_t framebuffers[MAX_FRAMEBUFFER_COUNT] = {};
+  xcb_pixmap_t framebuffers [MAX_FRAMEBUFFER_COUNT] = {};
+  xcb_shm_segment_info_t framebuffer_memory_info[MAX_FRAMEBUFFER_COUNT] = {};
 };
 
 Window_t windows[MAX_WINDOWS] = {};
@@ -73,6 +79,20 @@ bool create_window(const struct WindowDescriptor *desc, Window *window) {
     return false;
   }
 
+  xcb_map_window(connection, handle);
+
+  // Make sure we can use the shared memory extension
+  xcb_shm_query_version_reply_t* reply = xcb_shm_query_version_reply(
+        connection,
+        xcb_shm_query_version(connection),
+        nullptr
+  );
+
+  if(!reply || !reply->shared_pixmaps){
+    assert(false);
+    return false;
+  }
+
   (*window) = &windows[window_count];
   window_count++;
 
@@ -83,16 +103,23 @@ bool create_window(const struct WindowDescriptor *desc, Window *window) {
 
   // Create pixmaps
   for (uint32_t i = 0; i < MAX_FRAMEBUFFER_COUNT; ++i) {
-    xcb_pixmap_t pixmap = xcb_generate_id(connection);
-    xcb_create_pixmap(connection, 24, pixmap, handle, desc->width,
-                      desc->height);
+    xcb_shm_segment_info_t info = {};
+    info.shmid = shmget(IPC_PRIVATE, desc->width * desc->height * 4, IPC_CREAT | 0600);
+    info.shmaddr = (uint8_t*)shmat(info.shmid, 0, 0);
+    info.shmseg = xcb_generate_id(connection);
+  
+    xcb_shm_attach(connection, info.shmseg, info.shmid, 0);
+    shmctl(info.shmid, IPC_RMID, 0);
 
+    xcb_pixmap_t pixmap = xcb_generate_id(connection);
+    xcb_shm_create_pixmap(connection, pixmap, handle, desc->width,
+                      desc->height, screen->root_depth, info.shmseg, 0);
+
+    (*window)->framebuffer_memory_info[i] = info; 
     (*window)->framebuffers[i] = pixmap;
   }
 
   // TODO: Setup cookie for shutdown event
-
-  xcb_map_window(connection, handle);
 
   // Flush commands to show the window
   xcb_flush(connection);
@@ -101,29 +128,21 @@ bool create_window(const struct WindowDescriptor *desc, Window *window) {
 }
 
 bool window_should_close(Window window) {
-  xcb_flush(connection);
-
   xcb_generic_event_t *event = nullptr;
-  do {
-    event = xcb_poll_for_event(connection);
-    if (event != nullptr) {
+  while((event = xcb_poll_for_event(connection)) != nullptr){
+    // TODO: Handle events
+    delete event;
+  }
 
-      switch (event->response_type & ~0x80) {
-        // Actually present latest framebuffer to window
-      case XCB_EXPOSE: {
-        xcb_copy_area(connection, window->framebuffers[window->current_frame],
+  xcb_copy_area(connection, window->framebuffers[window->current_frame],
                       window->handle, window->graphics_context, 0, 0, 0, 0,
                       window->width, window->height);
 
-        window->current_frame++;
+  window->current_frame++;
+  window->current_frame = window->current_frame % MAX_FRAMEBUFFER_COUNT;
+  
+  xcb_flush(connection);
 
-        xcb_flush(connection);
-        break;
-      }
-      }
-    }
-
-  } while (event != nullptr);
   return false;
 }
 
@@ -132,17 +151,10 @@ void present_window(Window window, const uint8_t *framebuffer,
 
   uint32_t next_frame_idx = (window->current_frame + 1) % MAX_FRAMEBUFFER_COUNT;
 
-  xcb_pixmap_t next_pixmap = window->framebuffers[next_frame_idx];
+  xcb_shm_segment_info_t& framebuffer_memory_info = window->framebuffer_memory_info[next_frame_idx];
 
-  // Can we avoid this?
-  xcb_image_t *image = xcb_image_create_native(
-      connection, window->width, window->height, XCB_IMAGE_FORMAT_Z_PIXMAP, 24,
-      (void *)framebuffer, framebuffer_size, (uint8_t *)framebuffer);
-
-  xcb_image_put(connection, next_pixmap, window->graphics_context, image, 0, 0,
-                0);
-
-  // xcb_image_destroy(image);
+  uint8_t* framebuffer_data = framebuffer_memory_info.shmaddr;
+  memcpy(framebuffer_data, framebuffer, framebuffer_size);
 }
 
 void shutdown_window_system() {
@@ -150,7 +162,11 @@ void shutdown_window_system() {
     Window_t &window = windows[i];
 
     for (uint32_t i = 0; i < MAX_FRAMEBUFFER_COUNT; ++i) {
-      xcb_free_pixmap(connection, window.framebuffers[i]);
+      // Shutdown shared memory ext
+      xcb_shm_detach(connection, window.framebuffer_memory_info[i].shmseg);
+      shmdt(window.framebuffer_memory_info[i].shmaddr);
+
+      xcb_free_pixmap(connection, window.framebuffers[i]);      
     }
 
     xcb_free_gc(connection, window.graphics_context);

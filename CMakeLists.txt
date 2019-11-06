@@ -46,5 +46,5 @@ endif()
 if(${TARGET_LINUX})
     find_package(X11 REQUIRED)
 
-    target_link_libraries(raycaster PRIVATE xcb xcb-image)
+    target_link_libraries(raycaster PRIVATE xcb xcb-shm xcb-image)
 endif()

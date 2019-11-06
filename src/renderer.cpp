@@ -227,12 +227,12 @@ void draw_world(const Map *map) {
 
       if (cell_x < 0) {
         cell_x = 0;
-      } else if (cell_x > MAX_MAP_INDEX) {
+      } else if (cell_x > int32_t(MAX_MAP_INDEX)) {
         cell_x = MAX_MAP_INDEX;
       }
       if (cell_y < 0) {
         cell_y = 0;
-      } else if (cell_y > MAX_MAP_INDEX) {
+      } else if (cell_y > int32_t(MAX_MAP_INDEX)) {
         cell_y = MAX_MAP_INDEX;
       }
 

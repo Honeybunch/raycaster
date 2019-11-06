@@ -1,6 +1,24 @@
 # raycaster
 A simple 2.5 game with 0 dependencies
 
+## Setup
+You will need:
+ - CMake
+ - A compiler
+ - A build tool
+
+### Linux
+Keeping dependencies to a minimum is a priority for this project but to build on Linux you will make sure you have some XCB extension libraries installed.
+ - xcb-shm
+ - xcb-image
+
+On Ubuntu these can be installed with
+ - `sudo apt install libxcb-shm0-dev`
+ - `sudo apt install libxcb-image0-dev`
+
+Check with your distro to see how to get these xcb extension libs installed.
+Currently CMake will only check for XCB/X11 base libs so it's possible to hit a compiler error.
+
 ## Building
 Building this project should work fairly straightforwardly with CMake.
 

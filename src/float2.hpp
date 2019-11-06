@@ -3,8 +3,8 @@
 namespace raycaster {
 
 struct float2 {
-  float x = 0.0f;
-  float y = 0.0f;
+  float x;
+  float y;
 };
 
 float2 float2_add(float2 lhs, float2 rhs);
