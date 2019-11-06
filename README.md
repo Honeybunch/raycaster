@@ -25,8 +25,6 @@ Building this project should work fairly straightforwardly with CMake.
 On Windows:
  - VS2019 should work fine
  - Ninja with LLVM for Windows is preferred 
-  
-`cmake -E LDFLAGS=\"-fuse-ld=lld\" cmake -S . -B build_dir -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_RC_COMPILER=llvm-rc -DCMAKE_NO_SYSTEM_FROM_IMPORTED=TRUE`
 
 On Linux:
   - Ninja is preferred
