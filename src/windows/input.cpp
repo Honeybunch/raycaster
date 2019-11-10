@@ -34,6 +34,8 @@ void key_pressed(Key key) {
   }
 }
 
+bool init_input_system() { return true; }
+
 void register_key_press_callback(Key key, KeyPressCallback callback) {
   const uint32_t key_idx = static_cast<uint32_t>(key);
 
@@ -64,6 +66,8 @@ void poll_input() {
     }
   }
 }
+
+void shutdown_window_system() {}
 
 } // namespace raycaster
 #endif
