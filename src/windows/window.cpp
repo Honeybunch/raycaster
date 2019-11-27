@@ -11,7 +11,18 @@
 
 namespace raycaster {
 
-const uint32_t MAX_FRAMEBUFFER_COUNT = 2;
+const uint32_t max_framebuffer_count = 2;
+const uint32_t max_callbacks = 4;
+
+// Maps from our Key type to the win32 VK_KEY value
+const BYTE win32_vk_key_map[key_count] = {
+    'W', 'A', 'S', 'D', 'Q', 'E', VK_SPACE,
+};
+
+struct KeyPressCallbackTracker {
+  uint32_t callback_count = 0;
+  KeyPressCallback callbacks[max_callbacks] = {};
+};
 
 struct Window_t {
   HWND handle = NULL;
@@ -19,7 +30,8 @@ struct Window_t {
   uint32_t width = 0;
   uint32_t height = 0;
   uint32_t current_frame = 0;
-  HDC framebuffers[MAX_FRAMEBUFFER_COUNT] = {};
+  HDC framebuffers[max_framebuffer_count] = {};
+  KeyPressCallbackTracker key_press_callbacks[key_count] = {};
 };
 
 Window_t windows[MAX_WINDOWS] = {};
@@ -27,6 +39,34 @@ uint32_t window_count = 0;
 
 const wchar_t class_name[] = L"TestWindowClass";
 const wchar_t window_name[] = L"Raycaster";
+
+void key_pressed(Window window, Key key) {
+  uint32_t key_idx = static_cast<uint32_t>(key);
+  KeyPressCallbackTracker &tracker = window->key_press_callbacks[key_idx];
+  for (uint32_t i = 0; i < tracker.callback_count; ++i) {
+    tracker.callbacks[i]();
+  }
+}
+
+void poll_input(Window window) {
+  static const uint32_t max_win32_vk = 256;
+  BYTE vk_state[max_win32_vk] = {};
+
+  BOOL err = GetKeyboardState(vk_state);
+  (void)err;
+  assert(err != 0);
+
+  for (uint32_t i = 0; i < key_count; ++i) {
+    Key key = Key(i);
+    BYTE win32_key = win32_vk_key_map[i];
+
+    // Check only the high order bit
+    // Low order bit is used for toggle keys
+    if ((vk_state[win32_key] >> 7)) {
+      key_pressed(window, key);
+    }
+  }
+}
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
                             LPARAM lParam) {
@@ -108,7 +148,7 @@ bool create_window(const WindowDescriptor *desc, Window *window) {
   uint8_t *framebuffer_pixels = nullptr;
 
   HDC dc = GetDC(handle);
-  for (uint32_t i = 0; i < MAX_FRAMEBUFFER_COUNT; ++i) {
+  for (uint32_t i = 0; i < max_framebuffer_count; ++i) {
 
     HBITMAP hDib = CreateDIBSection(dc, &bmi, DIB_RGB_COLORS,
                                     (void **)&framebuffer_pixels, 0, 0);
@@ -129,7 +169,7 @@ bool create_window(const WindowDescriptor *desc, Window *window) {
   return true;
 }
 
-bool window_should_close(Window window) {
+void pump_window(Window window) {
   MSG msg = {};
 
   bool okay = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
@@ -139,7 +179,21 @@ bool window_should_close(Window window) {
   TranslateMessage(&msg);
   DispatchMessage(&msg);
 
-  return window->should_close;
+  poll_input(window);
+}
+
+bool window_should_close(Window window) { return window->should_close; }
+
+void register_key_press_callback(Window window, Key key,
+                                 KeyPressCallback callback) {
+  const uint32_t key_idx = static_cast<uint32_t>(key);
+
+  KeyPressCallbackTracker &tracker = window->key_press_callbacks[key_idx];
+
+  assert(tracker.callback_count <= max_callbacks);
+
+  tracker.callbacks[tracker.callback_count] = callback;
+  tracker.callback_count++;
 }
 
 void present_window(Window window, const uint8_t *framebuffer,
@@ -149,7 +203,7 @@ void present_window(Window window, const uint8_t *framebuffer,
   assert(window->width * window->height * 4 >= framebuffer_size);
 
   const uint32_t next_frame =
-      (window->current_frame + 1) % MAX_FRAMEBUFFER_COUNT;
+      (window->current_frame + 1) % max_framebuffer_count;
   HDC current_dc = window->framebuffers[next_frame];
 
   BITMAPINFO bmi = {};
@@ -176,7 +230,7 @@ void present_window(Window window, const uint8_t *framebuffer,
   RedrawWindow(window->handle, NULL, NULL, RDW_INTERNALPAINT);
 
   window->current_frame++;
-  window->current_frame = window->current_frame % MAX_FRAMEBUFFER_COUNT;
+  window->current_frame = window->current_frame % max_framebuffer_count;
 }
 
 void shutdown_window_system() {
