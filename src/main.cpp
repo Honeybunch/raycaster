@@ -1,5 +1,4 @@
 #include "float2.hpp"
-#include "input.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
 
@@ -146,10 +145,6 @@ bool start() {
 
   WindowDescriptor window_desc = {width, height};
 
-  if (!init_input_system()) {
-    return false;
-  }
-
   if (!init_window_system()) {
     return false;
   }
@@ -163,12 +158,12 @@ bool start() {
   }
 
   // register input callbacks
-  register_key_press_callback(Key::W, on_move_forward);
-  register_key_press_callback(Key::A, on_turn_left);
-  register_key_press_callback(Key::S, on_move_backward);
-  register_key_press_callback(Key::D, on_turn_right);
-  register_key_press_callback(Key::Q, on_move_left);
-  register_key_press_callback(Key::E, on_move_right);
+  register_key_press_callback(window, Key::W, on_move_forward);
+  register_key_press_callback(window, Key::A, on_turn_left);
+  register_key_press_callback(window, Key::S, on_move_backward);
+  register_key_press_callback(window, Key::D, on_turn_right);
+  register_key_press_callback(window, Key::Q, on_move_left);
+  register_key_press_callback(window, Key::E, on_move_right);
 
   // Load map
   map = load_map_1();
@@ -178,7 +173,7 @@ bool start() {
 
 void update() {
   while (!window_should_close(window)) {
-    poll_input();
+    pump_window(window);
 
     renderer_set_view(player.pos, player.view_angle);
 
@@ -195,7 +190,6 @@ void end() {
   destroy_map(map);
   shutdown_renderer();
   shutdown_window_system();
-  shutdown_input_system();
 }
 
 } // namespace raycaster

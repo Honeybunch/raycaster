@@ -10,7 +10,6 @@
 
 namespace raycaster {
 
-const uint32_t key_count = static_cast<uint32_t>(Key::COUNT);
 const uint32_t max_callbacks = 4;
 
 // Maps from our Key type to the win32 VK_KEY value
@@ -33,8 +32,6 @@ void key_pressed(Key key) {
     tracker.callbacks[i]();
   }
 }
-
-bool init_input_system() { return true; }
 
 void register_key_press_callback(Key key, KeyPressCallback callback) {
   const uint32_t key_idx = static_cast<uint32_t>(key);
@@ -66,8 +63,6 @@ void poll_input() {
     }
   }
 }
-
-void shutdown_window_system() {}
 
 } // namespace raycaster
 #endif
