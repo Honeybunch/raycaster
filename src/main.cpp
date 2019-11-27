@@ -146,6 +146,10 @@ bool start() {
 
   WindowDescriptor window_desc = {width, height};
 
+  if (!init_input_system()) {
+    return false;
+  }
+
   if (!init_window_system()) {
     return false;
   }
@@ -191,6 +195,7 @@ void end() {
   destroy_map(map);
   shutdown_renderer();
   shutdown_window_system();
+  shutdown_input_system();
 }
 
 } // namespace raycaster
